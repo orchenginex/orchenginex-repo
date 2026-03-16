@@ -1,0 +1,43 @@
+{
+  "name": "Event-Driven Pipeline",
+  "description": "Event-driven architecture with message broker, stream processor, worker pools, and dead letter queue. Models queue depth amplification and consumer lag dynamics.",
+  "nodes": [
+    { "id": "cdn-1", "type": "cdn", "label": "CDN", "latencyBaseline": 2, "retryPolicy": 0, "failureProbability": 0.5, "resourceCapacity": 99 },
+    { "id": "gw-1", "type": "api-gateway", "label": "API Gateway", "latencyBaseline": 5, "retryPolicy": 2, "failureProbability": 1, "resourceCapacity": 95, "replicaCount": 2 },
+    { "id": "lb-1", "type": "load-balancer", "label": "L4 Load Balancer", "latencyBaseline": 2, "retryPolicy": 0, "failureProbability": 0.5, "resourceCapacity": 99, "replicaCount": 2 },
+    { "id": "svc-order", "type": "stateless-service", "label": "Order Producer", "latencyBaseline": 15, "retryPolicy": 3, "failureProbability": 3, "resourceCapacity": 80, "replicaCount": 3 },
+    { "id": "svc-payment", "type": "stateless-service", "label": "Payment Producer", "latencyBaseline": 20, "retryPolicy": 2, "failureProbability": 4, "resourceCapacity": 75, "replicaCount": 2 },
+    { "id": "svc-inventory", "type": "stateless-service", "label": "Inventory Producer", "latencyBaseline": 12, "retryPolicy": 2, "failureProbability": 3, "resourceCapacity": 85, "replicaCount": 2 },
+    { "id": "mq-1", "type": "message-broker", "label": "Event Bus (Kafka)", "latencyBaseline": 8, "retryPolicy": 3, "failureProbability": 2, "resourceCapacity": 90, "replicaCount": 3 },
+    { "id": "sp-1", "type": "stream-processor", "label": "Stream Processor", "latencyBaseline": 12, "retryPolicy": 4, "failureProbability": 3, "resourceCapacity": 85, "replicaCount": 2 },
+    { "id": "wrk-a", "type": "background-worker", "label": "Worker Pool A", "latencyBaseline": 50, "retryPolicy": 3, "failureProbability": 4, "resourceCapacity": 75, "replicaCount": 4 },
+    { "id": "wrk-b", "type": "background-worker", "label": "Worker Pool B", "latencyBaseline": 45, "retryPolicy": 3, "failureProbability": 4, "resourceCapacity": 78, "replicaCount": 4 },
+    { "id": "dlq-1", "type": "dead-letter-queue", "label": "Dead Letter Queue", "latencyBaseline": 5, "retryPolicy": 0, "failureProbability": 1, "resourceCapacity": 95 },
+    { "id": "db-events", "type": "database", "label": "Events DB", "latencyBaseline": 10, "retryPolicy": 1, "failureProbability": 2, "resourceCapacity": 85, "replicaCount": 1, "dataPlaneConfig": { "consistency": "eventual", "replication": "async-primary", "sharding": "hash", "transaction": "saga" } },
+    { "id": "db-replica", "type": "replica-set", "label": "Events DB Replica", "latencyBaseline": 12, "retryPolicy": 1, "failureProbability": 3, "resourceCapacity": 80, "replicaCount": 2 },
+    { "id": "cache-1", "type": "cache", "label": "State Cache", "latencyBaseline": 1, "retryPolicy": 0, "failureProbability": 1, "resourceCapacity": 95, "replicaCount": 2 },
+    { "id": "kv-offsets", "type": "distributed-kv", "label": "Offset Store", "latencyBaseline": 4, "retryPolicy": 1, "failureProbability": 2, "resourceCapacity": 90, "replicaCount": 3 },
+    { "id": "ext-payment", "type": "payment-gateway", "label": "Payment Provider", "latencyBaseline": 120, "retryPolicy": 2, "failureProbability": 5, "resourceCapacity": 70 }
+  ],
+  "edges": [
+    { "id": "e-1", "source": "cdn-1", "target": "lb-1", "type": "sync", "latencyDistribution": 2, "packetLossProbability": 0.1, "retryPolicy": 0, "timeoutThreshold": 3000 },
+    { "id": "e-2", "source": "lb-1", "target": "gw-1", "type": "sync", "latencyDistribution": 2, "packetLossProbability": 0.1, "retryPolicy": 0, "timeoutThreshold": 3000 },
+    { "id": "e-3", "source": "gw-1", "target": "svc-order", "type": "sync", "latencyDistribution": 8, "packetLossProbability": 0.5, "retryPolicy": 2, "timeoutThreshold": 3000 },
+    { "id": "e-4", "source": "gw-1", "target": "svc-payment", "type": "sync", "latencyDistribution": 10, "packetLossProbability": 0.5, "retryPolicy": 2, "timeoutThreshold": 3000 },
+    { "id": "e-5", "source": "gw-1", "target": "svc-inventory", "type": "sync", "latencyDistribution": 8, "packetLossProbability": 0.5, "retryPolicy": 2, "timeoutThreshold": 3000 },
+    { "id": "e-6", "source": "svc-order", "target": "mq-1", "type": "async", "latencyDistribution": 5, "packetLossProbability": 0.1, "retryPolicy": 3, "timeoutThreshold": 10000 },
+    { "id": "e-7", "source": "svc-payment", "target": "mq-1", "type": "async", "latencyDistribution": 5, "packetLossProbability": 0.1, "retryPolicy": 3, "timeoutThreshold": 10000 },
+    { "id": "e-8", "source": "svc-inventory", "target": "mq-1", "type": "async", "latencyDistribution": 5, "packetLossProbability": 0.1, "retryPolicy": 3, "timeoutThreshold": 10000 },
+    { "id": "e-9", "source": "mq-1", "target": "sp-1", "type": "async", "latencyDistribution": 8, "packetLossProbability": 0.1, "retryPolicy": 5, "timeoutThreshold": 30000 },
+    { "id": "e-10", "source": "sp-1", "target": "wrk-a", "type": "async", "latencyDistribution": 10, "packetLossProbability": 0.2, "retryPolicy": 3, "timeoutThreshold": 30000 },
+    { "id": "e-11", "source": "sp-1", "target": "wrk-b", "type": "async", "latencyDistribution": 10, "packetLossProbability": 0.2, "retryPolicy": 3, "timeoutThreshold": 30000 },
+    { "id": "e-12", "source": "wrk-a", "target": "db-events", "type": "sync", "latencyDistribution": 8, "packetLossProbability": 0.1, "retryPolicy": 1, "timeoutThreshold": 5000 },
+    { "id": "e-13", "source": "wrk-b", "target": "db-events", "type": "sync", "latencyDistribution": 8, "packetLossProbability": 0.1, "retryPolicy": 1, "timeoutThreshold": 5000 },
+    { "id": "e-14", "source": "db-events", "target": "db-replica", "type": "replication", "latencyDistribution": 5, "packetLossProbability": 0.01, "retryPolicy": 10, "timeoutThreshold": 60000 },
+    { "id": "e-15", "source": "wrk-a", "target": "cache-1", "type": "sync", "latencyDistribution": 1, "packetLossProbability": 0.05, "retryPolicy": 0, "timeoutThreshold": 1000 },
+    { "id": "e-16", "source": "wrk-b", "target": "cache-1", "type": "sync", "latencyDistribution": 1, "packetLossProbability": 0.05, "retryPolicy": 0, "timeoutThreshold": 1000 },
+    { "id": "e-17", "source": "sp-1", "target": "kv-offsets", "type": "sync", "latencyDistribution": 3, "packetLossProbability": 0.05, "retryPolicy": 1, "timeoutThreshold": 2000 },
+    { "id": "e-18", "source": "mq-1", "target": "dlq-1", "type": "async", "latencyDistribution": 3, "packetLossProbability": 0.01, "retryPolicy": 0, "timeoutThreshold": 30000 },
+    { "id": "e-19", "source": "svc-payment", "target": "ext-payment", "type": "sync", "latencyDistribution": 100, "packetLossProbability": 1, "retryPolicy": 2, "timeoutThreshold": 10000 }
+  ]
+}

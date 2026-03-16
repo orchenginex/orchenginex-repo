@@ -1,0 +1,105 @@
+{
+  "name": "Basic Microservices",
+  "description": "A minimal microservices architecture with API gateway, 3 services, shared database, and cache. Good starting point for fragility analysis.",
+  "nodes": [
+    {
+      "id": "gw-1",
+      "type": "api-gateway",
+      "label": "API Gateway",
+      "latencyBaseline": 5,
+      "retryPolicy": 2,
+      "failureProbability": 1,
+      "resourceCapacity": 95,
+      "replicaCount": 2
+    },
+    {
+      "id": "lb-1",
+      "type": "load-balancer",
+      "label": "Load Balancer",
+      "latencyBaseline": 2,
+      "retryPolicy": 0,
+      "failureProbability": 0.5,
+      "resourceCapacity": 99,
+      "replicaCount": 2
+    },
+    {
+      "id": "svc-users",
+      "type": "stateless-service",
+      "label": "User Service",
+      "latencyBaseline": 15,
+      "retryPolicy": 3,
+      "failureProbability": 3,
+      "resourceCapacity": 80,
+      "replicaCount": 3
+    },
+    {
+      "id": "svc-orders",
+      "type": "stateless-service",
+      "label": "Order Service",
+      "latencyBaseline": 20,
+      "retryPolicy": 3,
+      "failureProbability": 4,
+      "resourceCapacity": 75,
+      "replicaCount": 3
+    },
+    {
+      "id": "svc-inventory",
+      "type": "stateless-service",
+      "label": "Inventory Service",
+      "latencyBaseline": 12,
+      "retryPolicy": 2,
+      "failureProbability": 3,
+      "resourceCapacity": 85,
+      "replicaCount": 2
+    },
+    {
+      "id": "db-primary",
+      "type": "database",
+      "label": "PostgreSQL Primary",
+      "latencyBaseline": 10,
+      "retryPolicy": 1,
+      "failureProbability": 2,
+      "resourceCapacity": 85,
+      "replicaCount": 1,
+      "dataPlaneConfig": {
+        "consistency": "linearizable",
+        "replication": "sync-quorum",
+        "sharding": "none",
+        "transaction": "2pc"
+      }
+    },
+    {
+      "id": "db-replica",
+      "type": "replica-set",
+      "label": "PostgreSQL Replica",
+      "latencyBaseline": 12,
+      "retryPolicy": 1,
+      "failureProbability": 3,
+      "resourceCapacity": 80,
+      "replicaCount": 2
+    },
+    {
+      "id": "cache-1",
+      "type": "cache",
+      "label": "Redis Cache",
+      "latencyBaseline": 1,
+      "retryPolicy": 0,
+      "failureProbability": 1,
+      "resourceCapacity": 95,
+      "replicaCount": 2
+    }
+  ],
+  "edges": [
+    { "id": "e-1", "source": "lb-1", "target": "gw-1", "type": "sync", "latencyDistribution": 2, "packetLossProbability": 0.1, "retryPolicy": 0, "timeoutThreshold": 3000 },
+    { "id": "e-2", "source": "gw-1", "target": "svc-users", "type": "sync", "latencyDistribution": 8, "packetLossProbability": 0.5, "retryPolicy": 2, "timeoutThreshold": 3000 },
+    { "id": "e-3", "source": "gw-1", "target": "svc-orders", "type": "sync", "latencyDistribution": 10, "packetLossProbability": 0.5, "retryPolicy": 2, "timeoutThreshold": 3000 },
+    { "id": "e-4", "source": "gw-1", "target": "svc-inventory", "type": "sync", "latencyDistribution": 8, "packetLossProbability": 0.5, "retryPolicy": 2, "timeoutThreshold": 3000 },
+    { "id": "e-5", "source": "svc-orders", "target": "svc-inventory", "type": "sync", "latencyDistribution": 12, "packetLossProbability": 0.5, "retryPolicy": 3, "timeoutThreshold": 5000 },
+    { "id": "e-6", "source": "svc-users", "target": "db-primary", "type": "sync", "latencyDistribution": 5, "packetLossProbability": 0.1, "retryPolicy": 1, "timeoutThreshold": 2000 },
+    { "id": "e-7", "source": "svc-orders", "target": "db-primary", "type": "sync", "latencyDistribution": 8, "packetLossProbability": 0.1, "retryPolicy": 1, "timeoutThreshold": 2000 },
+    { "id": "e-8", "source": "svc-inventory", "target": "db-primary", "type": "sync", "latencyDistribution": 5, "packetLossProbability": 0.1, "retryPolicy": 1, "timeoutThreshold": 2000 },
+    { "id": "e-9", "source": "db-primary", "target": "db-replica", "type": "replication", "latencyDistribution": 3, "packetLossProbability": 0.01, "retryPolicy": 10, "timeoutThreshold": 60000 },
+    { "id": "e-10", "source": "svc-users", "target": "cache-1", "type": "sync", "latencyDistribution": 1, "packetLossProbability": 0.05, "retryPolicy": 0, "timeoutThreshold": 1000 },
+    { "id": "e-11", "source": "svc-orders", "target": "cache-1", "type": "sync", "latencyDistribution": 1, "packetLossProbability": 0.05, "retryPolicy": 0, "timeoutThreshold": 1000 }
+  ]
+}
