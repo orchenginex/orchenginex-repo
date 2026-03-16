@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/favicon.png" alt="OrchEngineX" width="64" height="64" />
+  <img src="Full_Stack_HFT_Engine.png" alt="OrchEngineX" width="700"/>
 </p>
 
 <h1 align="center">OrchEngineX</h1>
