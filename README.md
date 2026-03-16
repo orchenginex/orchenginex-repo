@@ -396,84 +396,6 @@ Each publication includes interactive simulations, architecture graphs, and expo
 
 ---
 
-## Project Structure
-
-```
-orchenginex/
-├── public/                          # Static assets
-│   ├── favicon.png                  # Circuit-style favicon
-│   └── robots.txt
-├── src/
-│   ├── components/
-│   │   ├── architecture/            # Architecture Builder & analysis
-│   │   │   ├── ArchitectureBuilder.tsx
-│   │   │   ├── ArchitectureGraphView.tsx
-│   │   │   ├── ArchitectureMechanicsPanel.tsx
-│   │   │   ├── FragilityTrendChart.tsx
-│   │   │   ├── GrowthModePanel.tsx
-│   │   │   ├── SimulationPanel.tsx
-│   │   │   └── StructuralAnalysis.tsx
-│   │   ├── mechanics/               # System mechanics engines
-│   │   │   ├── computeMechanics.ts
-│   │   │   ├── computeNodeHealth.ts
-│   │   │   ├── deriveFromArchitecture.ts
-│   │   │   └── MechanicsSimulator.tsx
-│   │   ├── dataplane/               # Data plane simulator
-│   │   │   ├── DataPlaneSimulator.tsx
-│   │   │   └── computeImpact.ts
-│   │   ├── pool-saturation/         # Pool saturation case study
-│   │   ├── queue-collapse/          # Queue collapse case study
-│   │   └── docs/                    # Documentation components
-│   ├── types/
-│   │   └── architecture.ts          # Core type definitions (DWFG)
-│   ├── utils/
-│   │   ├── graphAnalysis.ts         # Structural metrics & risk computation
-│   │   ├── importArchitectureValidator.ts
-│   │   ├── exportGraphImage.ts
-│   │   └── exportGraphVideo.ts
-│   ├── hooks/
-│   │   ├── useArchitecturePersistence.ts
-│   │   ├── useFragilityTracking.ts
-│   │   └── useSavedSimulations.ts
-│   ├── pages/
-│   │   ├── Index.tsx                # Landing page
-│   │   ├── Simulations.tsx          # Architecture Builder + Simulations
-│   │   ├── Publications.tsx         # Research publications
-│   │   ├── Docs.tsx                 # Technical documentation hub
-│   │   ├── FailureAnalyses.tsx      # Failure case studies index
-│   │   ├── Methodology.tsx          # Methodology & formulas
-│   │   └── Performance.tsx          # Performance analysis
-│   └── data/
-│       └── publications.tsx         # Publication content & metadata
-├── supabase/
-│   └── functions/                   # Backend edge functions
-│       ├── data-api/                # Architecture CRUD, fragility API
-│       ├── simulate/                # Simulation engine API
-│       ├── visualize/               # SVG/PNG/HTML generation
-│       ├── experiments/             # Matrix sweep experiments
-│       ├── cli-auth/                # CLI authentication flow
-│       └── health-monitor/          # Health check endpoint
-├── docs/                            # Extended documentation
-│   ├── architecture-modeling.md
-│   ├── fragility-scoring.md
-│   ├── simulation-engine.md
-│   ├── system-mechanics.md
-│   ├── data-plane.md
-│   ├── cli-reference.md
-│   └── methodology.md
-├── examples/                        # Importable architecture JSON files
-│   ├── microservices-basic.json
-│   ├── event-driven-pipeline.json
-│   ├── multi-region-ha.json
-│   └── full-stack-hft.json
-├── CONTRIBUTING.md
-├── CHANGELOG.md
-├── LICENSE
-└── README.md
-```
-
----
-
 ## Tech Stack
 
 | Layer | Technology |
@@ -507,23 +429,6 @@ npm install
 
 # Start development server
 npm run dev
-```
-
-### Environment Variables
-
-| Variable | Description |
-|---|---|
-| `VITE_SUPABASE_URL` | Backend API URL |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Public API key |
-
-### Testing
-
-```bash
-# Run unit tests
-npm test
-
-# Run edge function tests
-npx supabase functions test simulate
 ```
 
 ---
